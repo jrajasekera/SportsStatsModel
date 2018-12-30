@@ -87,4 +87,11 @@ public class Utilities {
 
         return meanAndStdDev;
     }
+
+    public static boolean isNotBlankOrNA(String text) {
+        if (!text.equals("#N/A") && !text.equals("")) {
+            return true;
+        }
+        return false;
+    }
 }

@@ -3,8 +3,11 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -234,7 +237,115 @@ public class PrepDataPlayersToGames {
                 colLabelsGameList, seasons);
         Utilities.printProgressCompletion();
 
+        Utilities.printProgressMessage("Adding betting info to games");
+        String bettingDataCsv = "src/main/resources/CombinedBetting.csv";
+        addBettingInfoToGames(games, bettingDataCsv);
+        Utilities.printProgressCompletion();
+
         return games;
+    }
+
+    public static void addBettingInfoToGames(HashSet<Game> games,
+            String bettingDataCsv) {
+        String delim = ",";
+        boolean firstRowLabels = true;
+        ArrayList<String> colLabels = new ArrayList<>();
+        ArrayList<String[]> rows = readCsv(bettingDataCsv, delim,
+                firstRowLabels, colLabels);
+        for (String[] row : rows) {
+            HashMap<String, String> rowVals = new HashMap<>();
+            boolean validRow = verifyBettingDataRow(row, colLabels, rowVals);
+
+            if (validRow) {
+                try {
+                    Date date = new SimpleDateFormat("MM/dd/yyyy")
+                            .parse(rowVals.get("date"));
+                    Game g = findMatchingGame(date, rowVals.get("visitor"),
+                            rowVals.get("home"), games);
+                    if (g != null) {
+                        g.setBettingOdds(
+                                Double.parseDouble(rowVals.get("MLHomeOdds")),
+                                Double.parseDouble(
+                                        rowVals.get("MLVisitorOdds")),
+                                Double.parseDouble(
+                                        rowVals.get("PSVisitorSpread")),
+                                Double.parseDouble(rowVals.get("PSHomeSpread")),
+                                Double.parseDouble(
+                                        rowVals.get("PSVisitorOdds")),
+                                Double.parseDouble(rowVals.get("PSHomeOdds")),
+                                Double.parseDouble(rowVals.get("OUTotal")),
+                                Double.parseDouble(
+                                        rowVals.get("OUVisitorOdds")),
+                                Double.parseDouble(rowVals.get("OUHomeOdds")));
+                    }
+                } catch (ParseException e) {
+                    // should never reach here
+                }
+
+            }
+
+        }
+
+    }
+
+    public static boolean verifyBettingDataRow(String[] row,
+            ArrayList<String> colLabels, HashMap<String, String> rowVals) {
+        try {
+            Date date = new SimpleDateFormat("MM/dd/yyyy")
+                    .parse(row[colLabels.indexOf("game_date")]);
+            String season = row[colLabels.indexOf("season")];
+            String visitor = row[colLabels.indexOf("Visitor/Neutral")];
+            String home = row[colLabels.indexOf("Home/Neutral")];
+
+            String PSVisitorSpread = row[colLabels
+                    .indexOf("point_spread_visitor")];
+            String PSHomeSpread = row[colLabels.indexOf("point_spread_home")];
+            String PSVisitorOdds = row[colLabels
+                    .indexOf("spread_odds_visitor")];
+            String PSHomeOdds = row[colLabels.indexOf("spread_odds_home")];
+
+            String MLHomeOdds = row[colLabels.indexOf("ml_odds_home")];
+            String MLVisitorOdds = row[colLabels.indexOf("ml_odds_visitor")];
+
+            String OUTotal = row[colLabels.indexOf("total")];
+            String OUVisitorOdds = row[colLabels.indexOf("total_odds_visitor")];
+            String OUHomeOdds = row[colLabels.indexOf("total_odds_home")];
+
+            if (Utilities.isNotBlankOrNA(season)
+                    && Utilities.isNotBlankOrNA(visitor)
+                    && Utilities.isNotBlankOrNA(home)) {
+                if (!Utilities.isNotBlankOrNA(PSVisitorSpread)
+                        && !Utilities.isNotBlankOrNA(PSHomeSpread)
+                        && !Utilities.isNotBlankOrNA(PSVisitorOdds)
+                        && !Utilities.isNotBlankOrNA(PSHomeOdds)
+                        && !Utilities.isNotBlankOrNA(MLHomeOdds)
+                        && !Utilities.isNotBlankOrNA(MLVisitorOdds)
+                        && !Utilities.isNotBlankOrNA(OUTotal)
+                        && !Utilities.isNotBlankOrNA(OUVisitorOdds)
+                        && !Utilities.isNotBlankOrNA(OUHomeOdds)) {
+                    return false;
+                } else {
+                    rowVals.put("date", row[colLabels.indexOf("game_date")]);
+                    rowVals.put("season", season);
+                    rowVals.put("visitor", visitor);
+                    rowVals.put("home", home);
+                    rowVals.put("PSVisitorSpread", PSVisitorSpread);
+                    rowVals.put("PSHomeSpread", PSHomeSpread);
+                    rowVals.put("PSVisitorOdds", PSVisitorOdds);
+                    rowVals.put("PSHomeOdds", PSHomeOdds);
+                    rowVals.put("MLHomeOdds", MLHomeOdds);
+                    rowVals.put("MLVisitorOdds", MLVisitorOdds);
+                    rowVals.put("OUTotal", OUTotal);
+                    rowVals.put("OUVisitorOdds", OUVisitorOdds);
+                    rowVals.put("OUHomeOdds", OUHomeOdds);
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (ParseException e) {
+            return false;
+        }
     }
 
     public static void removeNonApplicableGames(
@@ -249,6 +360,21 @@ public class PrepDataPlayersToGames {
         }
         gameDataByRow.clear();
         gameDataByRow.addAll(tmp);
+    }
+
+    public static Game findMatchingGame(Date date, String visitor, String home,
+            HashSet<Game> games) {
+        for (Game g : games) {
+            if (g.date.getYear() == date.getYear()
+                    && g.date.getMonth() == date.getMonth()
+                    && g.date.getDate() == date.getDate()
+                    && g.visitorTeam.equals(visitor)
+                    && g.homeTeam.equals(home)) {
+                return g;
+            }
+        }
+
+        return null;
     }
 
     public static void printGameDataToCSV(HashSet<Game> games,
