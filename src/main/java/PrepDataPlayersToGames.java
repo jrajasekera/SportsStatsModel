@@ -177,8 +177,15 @@ public class PrepDataPlayersToGames {
 
         // calculate probability before transforming
         Utilities.printProgressMessage("Calculating Normality of team stats");
-        HashMap<String, ArrayList<String>> nonNormalStats1 = findNonNormalTeamDistros(
-                seasons, statLabelsOrdered, isNumericStats);
+//        HashMap<String, ArrayList<String>> nonNormalStats1 = findNonNormalTeamDistros(
+//                seasons, statLabelsOrdered, isNumericStats);
+        //TODO REMOVE WHEN DONE DEVELOPING, replace with lines above
+        HashMap<String, ArrayList<String>> nonNormalStats1;
+        if (usePreviousYearStats) {
+            nonNormalStats1 = tmpPushedBackStats();
+        } else {
+            nonNormalStats1 = tmpOGStats();
+        }
         Utilities.printProgressCompletion();
 
         // Normalize non-normal stat distros with BoxCox transform
@@ -396,7 +403,7 @@ public class PrepDataPlayersToGames {
         }
     }
 
-    public static HashMap<String, ArrayList<String>> tmp() {
+    public static HashMap<String, ArrayList<String>> tmpOGStats() {
         HashMap<String, ArrayList<String>> nonNormalStats = new HashMap<>();
 
         ArrayList<String> s12_13 = new ArrayList<>();
@@ -448,6 +455,56 @@ public class PrepDataPlayersToGames {
         s17_18.add("2PA");
         s17_18.add("ORB");
         s17_18.add("STL");
+        nonNormalStats.put("17/18", s17_18);
+
+        return nonNormalStats;
+    }
+
+    public static HashMap<String, ArrayList<String>> tmpPushedBackStats() {
+        HashMap<String, ArrayList<String>> nonNormalStats = new HashMap<>();
+
+        ArrayList<String> s13_14 = new ArrayList<>();
+        s13_14.add("FTr");
+        s13_14.add("FT");
+        s13_14.add("FTA");
+        s13_14.add("TOV");
+        nonNormalStats.put("13/14", s13_14);
+
+        ArrayList<String> s14_15 = new ArrayList<>();
+        s14_15.add("DBPM");
+        nonNormalStats.put("14/15", s14_15);
+
+        ArrayList<String> s15_16 = new ArrayList<>();
+        s15_16.add("MP");
+        s15_16.add("FG");
+        s15_16.add("3P");
+        s15_16.add("2P");
+        s15_16.add("2PA");
+        nonNormalStats.put("15/16", s15_16);
+
+        ArrayList<String> s16_17 = new ArrayList<>();
+        s16_17.add("PER");
+        s16_17.add("FTr");
+        s16_17.add("ORB%");
+        s16_17.add("OWS");
+        s16_17.add("DWS");
+        s16_17.add("OBPM");
+        s16_17.add("BPM");
+        s16_17.add("VORP");
+        s16_17.add("3P");
+        s16_17.add("3PA");
+        s16_17.add("FT");
+        s16_17.add("FTA");
+        s16_17.add("ORB");
+        s16_17.add("DRB");
+        s16_17.add("TRB");
+        nonNormalStats.put("16/17", s16_17);
+
+        ArrayList<String> s17_18 = new ArrayList<>();
+        s17_18.add("DRB%");
+        s17_18.add("TRB%");
+        s17_18.add("3P");
+        s17_18.add("3PA");
         nonNormalStats.put("17/18", s17_18);
 
         return nonNormalStats;
