@@ -187,21 +187,21 @@ public class PrepDataPlayersToGames {
         Utilities.printProgressCompletion();
 
         // test team stats for normality, find non-normal team stat distros in each season
-        Utilities.printProgressMessage("Calculating Normality of team stats");
-        HashMap<String, ArrayList<String>> nonNormalStats = findNonNormalTeamDistros(
-                seasons, statLabelsOrdered, isNumericStats);
-        Utilities.printProgressCompletion();
-
-        //print non normal stats
-        System.out.println("Stats unable to be normalized");
-        for (String season : nonNormalStats.keySet()) {
-            System.out
-                    .println("_______S" + season + " Non-normal Stats_______");
-            for (String stat : nonNormalStats.get(season)) {
-                System.out.println(stat);
-            }
-        }
-        System.out.println();
+//        Utilities.printProgressMessage("Calculating Normality of team stats");
+//        HashMap<String, ArrayList<String>> nonNormalStats = findNonNormalTeamDistros(
+//                seasons, statLabelsOrdered, isNumericStats);
+//        Utilities.printProgressCompletion();
+//
+//        //print non normal stats
+//        System.out.println("Stats unable to be normalized");
+//        for (String season : nonNormalStats.keySet()) {
+//            System.out
+//                    .println("_______S" + season + " Non-normal Stats_______");
+//            for (String stat : nonNormalStats.get(season)) {
+//                System.out.println(stat);
+//            }
+//        }
+//        System.out.println();
 
         Utilities.printProgressMessage("Converting stats to percentile values");
         convertStatsToPercentiles(seasons, statLabelsOrdered, isNumericStats);
