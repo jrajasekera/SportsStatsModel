@@ -117,4 +117,45 @@ public class Game {
         return json;
     }
 
+    MoneyLine moneyLine;
+
+    private class MoneyLine {
+        double homeOdds;
+        double visitorOdds;
+    }
+
+    PointSpread pointSpread;
+
+    private class PointSpread {
+        double visitorSpread;
+        double homeSpread;
+        double visitorOdds;
+        double homeOdds;
+    }
+
+    OverUnder overUnder;
+
+    private class OverUnder {
+        double total;
+        double visitorOdds;
+        double homeOdds;
+    }
+
+    public void setBettingOdds(double MLHomeOdds, double MLVisitorOdds,
+            double PSVisitorSpread, double PSHomeSpread, double PSVisitorOdds,
+            double PSHomeOdds, double OUTotal, double OUVisitorOdds,
+            double OUHomeOdds) {
+        this.moneyLine.homeOdds = MLHomeOdds;
+        this.moneyLine.visitorOdds = MLVisitorOdds;
+
+        this.pointSpread.visitorSpread = PSVisitorSpread;
+        this.pointSpread.homeSpread = PSHomeSpread;
+        this.pointSpread.visitorOdds = PSVisitorOdds;
+        this.pointSpread.homeOdds = PSHomeOdds;
+
+        this.overUnder.total = OUTotal;
+        this.overUnder.visitorOdds = OUVisitorOdds;
+        this.overUnder.homeOdds = OUHomeOdds;
+    }
+
 }
