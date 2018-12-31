@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -263,20 +264,44 @@ public class PrepDataPlayersToGames {
                     Game g = findMatchingGame(date, rowVals.get("visitor"),
                             rowVals.get("home"), games);
                     if (g != null) {
-                        g.setBettingOdds(
-                                Double.parseDouble(rowVals.get("MLHomeOdds")),
-                                Double.parseDouble(
-                                        rowVals.get("MLVisitorOdds")),
-                                Double.parseDouble(
-                                        rowVals.get("PSVisitorSpread")),
-                                Double.parseDouble(rowVals.get("PSHomeSpread")),
-                                Double.parseDouble(
-                                        rowVals.get("PSVisitorOdds")),
-                                Double.parseDouble(rowVals.get("PSHomeOdds")),
-                                Double.parseDouble(rowVals.get("OUTotal")),
-                                Double.parseDouble(
-                                        rowVals.get("OUVisitorOdds")),
-                                Double.parseDouble(rowVals.get("OUHomeOdds")));
+                        if (Utilities.isNotBlankOrNA(rowVals.get("MLHomeOdds"))
+                                && Utilities.isNotBlankOrNA(
+                                        rowVals.get("MLVisitorOdds"))) {
+                            g.moneyLine.homeOdds = Double
+                                    .parseDouble(rowVals.get("MLHomeOdds"));
+                            g.moneyLine.visitorOdds = Double
+                                    .parseDouble(rowVals.get("MLVisitorOdds"));
+                        }
+                        if (Utilities
+                                .isNotBlankOrNA(rowVals.get("PSVisitorSpread"))
+                                && Utilities.isNotBlankOrNA(
+                                        rowVals.get("PSHomeSpread"))
+                                && Utilities.isNotBlankOrNA(
+                                        rowVals.get("PSVisitorOdds"))
+                                && Utilities.isNotBlankOrNA(
+                                        rowVals.get("PSHomeOdds"))) {
+                            g.pointSpread.visitorSpread = Double.parseDouble(
+                                    rowVals.get("PSVisitorSpread"));
+                            g.pointSpread.homeSpread = Double
+                                    .parseDouble(rowVals.get("PSHomeSpread"));
+                            g.pointSpread.visitorOdds = Double
+                                    .parseDouble(rowVals.get("PSVisitorOdds"));
+                            g.pointSpread.homeOdds = Double
+                                    .parseDouble(rowVals.get("PSHomeOdds"));
+                        }
+                        if (Utilities.isNotBlankOrNA(rowVals.get("OUTotal"))
+                                && Utilities.isNotBlankOrNA(
+                                        rowVals.get("OUVisitorOdds"))
+                                && Utilities.isNotBlankOrNA(
+                                        rowVals.get("OUHomeOdds"))) {
+                            g.overUnder.total = Double
+                                    .parseDouble(rowVals.get("OUTotal"));
+                            g.overUnder.visitorOdds = Double
+                                    .parseDouble(rowVals.get("OUVisitorOdds"));
+                            g.overUnder.homeOdds = Double
+                                    .parseDouble(rowVals.get("OUHomeOdds"));
+                        }
+
                     }
                 } catch (ParseException e) {
                     // should never reach here
@@ -365,13 +390,22 @@ public class PrepDataPlayersToGames {
     public static Game findMatchingGame(Date date, String visitor, String home,
             HashSet<Game> games) {
         for (Game g : games) {
-            if (g.date.getYear() == date.getYear()
-                    && g.date.getMonth() == date.getMonth()
-                    && g.date.getDate() == date.getDate()
-                    && g.visitorTeam.equals(visitor)
-                    && g.homeTeam.equals(home)) {
-                return g;
+
+            if (g.visitorTeam.team.equals(visitor)
+                    && g.homeTeam.team.equals(home)) {
+                Calendar cal1 = Calendar.getInstance();
+                Calendar cal2 = Calendar.getInstance();
+                cal1.setTime(g.date);
+                cal2.setTime(date);
+                boolean sameDay = cal1.get(Calendar.DAY_OF_YEAR) == cal2
+                        .get(Calendar.DAY_OF_YEAR)
+                        && cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR);
+
+                if (sameDay) {
+                    return g;
+                }
             }
+
         }
 
         return null;

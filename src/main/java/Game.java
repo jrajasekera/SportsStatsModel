@@ -117,45 +117,28 @@ public class Game {
         return json;
     }
 
-    MoneyLine moneyLine;
+    MoneyLine moneyLine = new MoneyLine();
 
-    private class MoneyLine {
-        double homeOdds;
-        double visitorOdds;
+    public class MoneyLine {
+        Double homeOdds;
+        Double visitorOdds;
     }
 
-    PointSpread pointSpread;
+    PointSpread pointSpread = new PointSpread();
 
-    private class PointSpread {
-        double visitorSpread;
-        double homeSpread;
-        double visitorOdds;
-        double homeOdds;
+    public class PointSpread {
+        Double visitorSpread;
+        Double homeSpread;
+        Double visitorOdds;
+        Double homeOdds;
     }
 
-    OverUnder overUnder;
+    OverUnder overUnder = new OverUnder();
 
-    private class OverUnder {
-        double total;
-        double visitorOdds;
-        double homeOdds;
-    }
-
-    public void setBettingOdds(double MLHomeOdds, double MLVisitorOdds,
-            double PSVisitorSpread, double PSHomeSpread, double PSVisitorOdds,
-            double PSHomeOdds, double OUTotal, double OUVisitorOdds,
-            double OUHomeOdds) {
-        this.moneyLine.homeOdds = MLHomeOdds;
-        this.moneyLine.visitorOdds = MLVisitorOdds;
-
-        this.pointSpread.visitorSpread = PSVisitorSpread;
-        this.pointSpread.homeSpread = PSHomeSpread;
-        this.pointSpread.visitorOdds = PSVisitorOdds;
-        this.pointSpread.homeOdds = PSHomeOdds;
-
-        this.overUnder.total = OUTotal;
-        this.overUnder.visitorOdds = OUVisitorOdds;
-        this.overUnder.homeOdds = OUHomeOdds;
+    public class OverUnder {
+        Double total;
+        Double visitorOdds;
+        Double homeOdds;
     }
 
 }

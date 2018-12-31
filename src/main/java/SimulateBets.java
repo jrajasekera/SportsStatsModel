@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,6 +10,8 @@ import org.bigml.binding.LocalDeepnet;
 import org.bigml.binding.LocalEnsemble;
 import org.bigml.binding.PredictionMethod;
 import org.json.simple.JSONObject;
+
+import flanagan.analysis.Stat;
 
 public class SimulateBets {
 
@@ -42,56 +45,104 @@ public class SimulateBets {
 
         Iterator<Game> allGames = games.iterator();
 
-//        int totalGames = 0;
-//        int correctWinner = 0;
-//
-//        ArrayList<Double> spreadDiff = new ArrayList<>();
-//        ArrayList<Double> totalPointsDiff = new ArrayList<>();
+        int totalGames = 0;
+        int correctWinner = 0;
 
-//        while (allGames.hasNext()) {
-        Game game = allGames.next();
-        String homeTeam = game.homeTeam.team;
-        String visitorTeam = game.visitorTeam.team;
-        Date date = game.date;
+        ArrayList<Double> spreadDiff = new ArrayList<>();
+        ArrayList<Double> totalPointsDiff = new ArrayList<>();
+
+        while (allGames.hasNext()) {
+            Game game = allGames.next();
+            String homeTeam = game.homeTeam.team;
+            String visitorTeam = game.visitorTeam.team;
+            Date date = game.date;
+
+            // get stat data for specific game
+            JSONObject gameStats = game.getJSONGameStats(stats);
+
+            // predict winner
+            int winner = predictWinner(gameStats, winnerLocalEnsemble, api);
+
+            // predict spread
+            double spread = predictSpread(gameStats, spreadLocalDeepNet, api);
+
+            //predict total points
+            double totalPoints = predictTotalPoints(gameStats,
+                    totalPointsLocalEnsemble, api);
+
+            if (homeTeam.equals("PHX") && visitorTeam.equals("LAC")
+                    && game.season.equals("16/17")) {
+
+                System.out.println("\n" + homeTeam + " vs. " + visitorTeam + " "
+                        + date.toString());
+
+                System.out.println("\n____Money_Line____");
+                System.out.println("Predicted Winner: " + winner);
+                System.out.println("Actual Winner: " + game.winner);
+                if (game.moneyLine.homeOdds != null
+                        && game.moneyLine.visitorOdds != null) {
+                    System.out.println(
+                            "MoneyLine Home Odds: " + game.moneyLine.homeOdds);
+                    System.out.println("MoneyLine Visitor Odds: "
+                            + game.moneyLine.visitorOdds);
+                } else {
+                    System.out.println("No Money Line available");
+                }
+
+                System.out.println("\n____Point_Spread____");
+                System.out.println("Predicted Spread:" + spread);
+                System.out.println("Actual Spread: " + game.spread);
+                if (game.pointSpread.homeSpread != null
+                        && game.pointSpread.visitorSpread != null
+                        && game.pointSpread.homeOdds != null
+                        && game.pointSpread.visitorOdds != null) {
+                    System.out.println("Point Spread Home Spread:"
+                            + game.pointSpread.homeSpread);
+                    System.out.println("Point Spread Visitor Spread:"
+                            + game.pointSpread.visitorSpread);
+                    System.out.println("Point Spread Home Odds:"
+                            + game.pointSpread.homeOdds);
+                    System.out.println("Point Spread Visitor Odds:"
+                            + game.pointSpread.visitorOdds);
+                } else {
+                    System.out.println("No Point Spread Avaliable");
+                }
+
+                System.out.println("\n____Over_Under____");
+                System.out.println("Predicted Total Points: " + totalPoints);
+                System.out.println("Actual Total Points: " + game.totalPoints);
+                if (game.overUnder.total != null
+                        && game.overUnder.homeOdds != null
+                        && game.overUnder.visitorOdds != null) {
+                    System.out.println(
+                            "Over/Under total: " + game.overUnder.total);
+                    System.out.println(
+                            "Over/Under Home Odds: " + game.overUnder.homeOdds);
+                    System.out.println("Over/Under Visitor Odds: "
+                            + game.overUnder.visitorOdds);
+                } else {
+                    System.out.println("No Over Under Available");
+                }
+
+            }
+
+            spreadDiff.add(Math.abs(game.spread - spread));
+            totalPointsDiff.add(Math.abs(game.totalPoints - totalPoints));
+            if (winner == game.winner) {
+                correctWinner++;
+            }
+            totalGames++;
+        }
+        double correctWinPer = ((double) correctWinner) / ((double) totalGames);
+        Stat spreadStats = new Stat(
+                Utilities.arrayListToArrayDouble(spreadDiff));
+        Stat totalPointStats = new Stat(
+                Utilities.arrayListToArrayDouble(totalPointsDiff));
+
+        System.out.println("___Winner___\nCorrect%: " + correctWinPer);
+        System.out.println("___Spread___\nStd Error: " + spreadStats.mean());
         System.out.println(
-                homeTeam + " vs. " + visitorTeam + " " + date.toString());
-
-        // get stat data for specific game
-        JSONObject gameStats = game.getJSONGameStats(stats);
-
-        // predict winner
-        int winner = predictWinner(gameStats, winnerLocalEnsemble, api);
-        System.out.println("Predicted Winner: " + winner);
-        System.out.println("Actual Winner: " + game.winner);
-
-        // predict spread
-        double spread = predictSpread(gameStats, spreadLocalDeepNet, api);
-        System.out.println("Predicted Spread:" + spread);
-        System.out.println("Actual Spread: " + game.spread);
-
-        //predict total points
-        double totalPoints = predictTotalPoints(gameStats,
-                totalPointsLocalEnsemble, api);
-        System.out.println("Predicted Total Points: " + totalPoints);
-        System.out.println("Actual Total Points: " + game.totalPoints);
-
-//            spreadDiff.add(Math.abs(game.spread - spread));
-//            totalPointsDiff.add(Math.abs(game.totalPoints - totalPoints));
-//            if (winner == game.winner) {
-//                correctWinner++;
-//            }
-//            totalGames++;
-//        }
-//        double correctWinPer = ((double) correctWinner) / ((double) totalGames);
-//        Stat spreadStats = new Stat(
-//                Utilities.arrayListToArrayDouble(spreadDiff));
-//        Stat totalPointStats = new Stat(
-//                Utilities.arrayListToArrayDouble(totalPointsDiff));
-
-//        System.out.println("___Winner___\nCorrect%: " + correctWinPer);
-//        System.out.println("___Spread___\nStd Error: " + spreadStats.mean());
-//        System.out.println(
-//                "___Total Points___\nStd Error: " + totalPointStats.mean());
+                "___Total Points___\nStd Error: " + totalPointStats.mean());
     }
 
     public static double predictTotalPoints(JSONObject inputData,
